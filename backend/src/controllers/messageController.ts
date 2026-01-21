@@ -35,9 +35,11 @@ export async function getMessages(
       return;
     }
 
+    const limit = Math.min(Number(req.query.limit) || 50, 200);
     const messages = await Message.find({ chat: chatId })
       .populate("sender", "username email avatar")
-      .sort({ createdAt: 1 });
+      .sort({ createdAt: -1 })
+      .limit(limit);
 
     res.json(messages);
   } catch (error) {
