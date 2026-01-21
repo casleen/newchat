@@ -42,10 +42,13 @@ app.use((req, res) => {
 
 //serve frontend in production
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../../web/dist")));
+  const frontendPath = path.join(__dirname, "../../web/dist");
+  app.use(express.static(frontendPath));
 
-  app.get("/{*}", (req, res) => {
-    res.sendFile(path.join(__dirname, "../../web/dist", "index.html"));
+  // 这里用 '*'
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
   });
 }
+
 export default app;
