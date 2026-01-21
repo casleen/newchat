@@ -3,6 +3,10 @@ FROM oven/bun:latest
 
 # create a directory for the project
 WORKDIR /app
+COPY . .
+
+RUN bun install
+RUN bun run build
 
 #build web frontend
 WORKDIR /app/web
