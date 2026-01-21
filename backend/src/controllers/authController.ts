@@ -10,6 +10,11 @@ export async function getMe(
 ) {
   try {
     const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
     const user = await User.findById(userId);
 
     if (!user) {
@@ -21,7 +26,7 @@ export async function getMe(
     res.status(200).json(user);
   } catch (error) {
     res.status(500);
-    next();
+    next(error);
   }
 }
 
@@ -40,15 +45,21 @@ export async function authCallback(
     let user = await User.findOne({ clerkId });
     if (!user) {
       const clerkUser = await clerkClient.users.getUser(clerkId);
-
-      user = await User.create({
-        clerkId,
-        username: clerkUser.firstName
-          ? `${clerkUser.firstName} ${clerkUser.lastName || ""}`.trim()
-          : clerkUser.emailAddresses[0]?.emailAddress.split("@")[0] || "User",
-        email: clerkUser.emailAddresses[0]?.emailAddress || "",
-        avatar: clerkUser.imageUrl,
-      });
+      user = await User.findOneAndUpdate(
+        { clerkId },
+        {
+          $setOnInsert: {
+            clerkId,
+            username: clerkUser.firstName
+              ? `${clerkUser.firstName} ${clerkUser.lastName || ""}`.trim()
+              : clerkUser.emailAddresses[0]?.emailAddress.split("@")[0] ||
+                "User",
+            email: clerkUser.emailAddresses[0]?.emailAddress || "",
+            avatar: clerkUser.imageUrl,
+          },
+        },
+        { new: true, upsert: true },
+      );
     }
     res.json(user);
   } catch (error) {
