@@ -1,5 +1,6 @@
 import type { Response, NextFunction } from "express";
 import type { AuthRequest } from "../middleware/auth";
+import { Types } from "mongoose";
 import { Chat } from "../models/Chat";
 import { Message } from "../models/Message";
 
@@ -10,10 +11,18 @@ export async function getMessages(
 ) {
   try {
     const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
 
     const { chatId } = req.params;
-    if (!chatId) {
-      res.status(400).json({ message: "Chat ID is required" });
+    if (
+      !chatId ||
+      typeof chatId !== "string" ||
+      !Types.ObjectId.isValid(chatId)
+    ) {
+      res.status(400).json({ message: "Invalid chat ID" });
       return;
     }
     const chat = await Chat.findOne({
@@ -32,7 +41,6 @@ export async function getMessages(
 
     res.json(messages);
   } catch (error) {
-    res.status(500);
     next(error);
   }
 }

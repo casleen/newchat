@@ -15,8 +15,8 @@ export const initializeSocket = (httpServer: HttpServer) => {
   const allowedOrigins = [
     "http://localhost:8081", //Expo mobile
     "http://localhost:5173", //Vite web dev
-    process.env.FRONTEND_URL as string, //Production
-  ];
+    process.env.FRONTEND_URL, //Production
+  ].filter(Boolean) as string[];
   const io = new SocketServer(httpServer, {
     cors: {
       origin: allowedOrigins,
@@ -24,28 +24,30 @@ export const initializeSocket = (httpServer: HttpServer) => {
   });
 
   io.use(async (socket, next) => {
-    const token = socket.handshake.auth.token;
-    if (!token) {
-      throw new Error("Unauthorized");
-    }
-
     try {
+      const token = socket.handshake.auth.token;
+      if (!token) {
+        return next(new Error("Unauthorized"));
+      }
+
       const session = await verifyToken(token, {
         secretKey: process.env.CLERK_SECRET_KEY as string,
       });
 
-      const clerkId = session!.sub;
+      const clerkId = session.sub;
 
       const user = await User.findOne({ clerkId });
       if (!user) {
         throw new Error("User not found");
       }
 
-      (socket as SocketWithUserId).userId = user._id.toString();
+      socket.data.userId = user._id.toString();
 
-      next();
+      return next();
     } catch (error: any) {
-      next(new Error(error));
+      return next(
+        error instanceof Error ? error : new Error("Authentication error"),
+      );
     }
   });
 
@@ -110,7 +112,7 @@ export const initializeSocket = (httpServer: HttpServer) => {
 
     //TODO:LATER
     socket.on("typing", async (data) => {});
-    socket.on("disconnected", () => {
+    socket.on("disconnect", () => {
       onlineUsers.delete(userId!);
       socket.broadcast.emit("user-offline", { userId });
     });
