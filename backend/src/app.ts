@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 import { clerkMiddleware } from "@clerk/express";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes";
@@ -39,4 +40,12 @@ app.use((req, res) => {
   });
 });
 
+//serve frontend in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../../web/dist")));
+
+  app.get("/{*any}", (req, res) => {
+    res.sendFile(path.join(__dirname, "../../web/dist", "index.html"));
+  });
+}
 export default app;
