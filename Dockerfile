@@ -1,6 +1,14 @@
 FROM oven/bun:latest
 
-# ---------- build web ----------
+# create a directory for the project
+WORKDIR /app
+
+COPY . .
+
+RUN bun install
+RUN bun run build
+
+#build web frontend
 WORKDIR /app/web
 COPY web/package.json web/bun.lock* ./
 RUN bun install --frozen-lockfile
@@ -26,4 +34,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV NODE_ENV=production
 
+# start the application
 CMD ["bun", "run", "start"]
