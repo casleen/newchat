@@ -95,7 +95,7 @@ export const initializeSocket = (httpServer: HttpServer) => {
           chat.lastMessageAt = new Date();
           await chat.save();
 
-          await message.populate("sender", "username email avatar");
+          await message.populate("sender", "username  avatar");
 
           io.to(`chat:${chatId}`).emit("message-received", message);
 
