@@ -1,0 +1,16 @@
+d02b2cd09fa30529477395a3f9ca2474e70c677b	refs/heads/auth-sync-from-main
+d02b2cd09fa30529477395a3f9ca2474e70c677b	refs/heads/auth-sync-mobile-main
+999fc42d56b08748d9615e8fca71bf2373dc411c	refs/heads/backup/mobile-auth-before-linearize-20260123
+2b4e1209ddc6bb09315bb4a30f70499595224e3d	refs/heads/clean-auth-sync
+2fd8821bb250b4c559a88fd1919d8ffe5456439f	refs/heads/main
+c310d43ba91efed5ff06012c40a73bbb1f1a8f82	refs/heads/mobile-auth
+d54cd6d8753561ec032bc7045a7ecd24c58b84c5	refs/heads/react-native-basics-setup
+2fd8821bb250b4c559a88fd1919d8ffe5456439f	refs/remotes/origin/HEAD
+d4992b4b094b74ad1e2c25c5bb3bab3d14f9c753	refs/remotes/origin/Socket
+20e254eae4095089e3343fc7533009254d3292e6	refs/remotes/origin/auth-routes-controllers
+2b4e1209ddc6bb09315bb4a30f70499595224e3d	refs/remotes/origin/clean-auth-sync
+2fd8821bb250b4c559a88fd1919d8ffe5456439f	refs/remotes/origin/main
+c310d43ba91efed5ff06012c40a73bbb1f1a8f82	refs/remotes/origin/mobile-auth
+d54cd6d8753561ec032bc7045a7ecd24c58b84c5	refs/remotes/origin/react-native-basics-setup
+dc19856f49164b82d8021b431ebb33c93aca547a	refs/remotes/origin/rn-basics-setup
+8393ff3826a2e52eb27bf1c1f19cf22cb958a94c	refs/remotes/origin/routes-completed
