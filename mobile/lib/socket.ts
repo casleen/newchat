@@ -83,7 +83,10 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     });
 
     socket.on("new-message", (message: Message) => {
-      const senderId = (message.sender as MessageSender)._id;
+      const senderId =
+        typeof message.sender === "string"
+          ? message.sender
+          : message.sender?._id;
       const { currentChatId } = get();
 
       // add message to the chat's message list, replacing optimistic messages
@@ -95,27 +98,35 @@ export const useSocketStore = create<SocketState>((set, get) => ({
         return [...filtered, message];
       });
 
-      // Update chat's lastMessage directly for instant UI update
-      queryClient.setQueryData<Chat[]>(["chats"], (oldChats) => {
-        return oldChats?.map((chat) => {
-          if (chat._id === message.chat) {
-            return {
-              ...chat,
-              lastMessage: {
-                _id: message._id,
-                text: message.text,
-                sender: senderId,
-                createdAt: message.createdAt,
-              },
-              lastMessageAt: message.createdAt,
-            };
-          }
-          return chat;
+      if (!senderId) {
+        Sentry.logger.warn("Received new-message without sender id", {
+          messageId: message._id,
+          chatId: message.chat,
+          senderType: typeof message.sender,
         });
-      });
+      } else {
+        // Update chat's lastMessage directly for instant UI update
+        queryClient.setQueryData<Chat[]>(["chats"], (oldChats) => {
+          return oldChats?.map((chat) => {
+            if (chat._id === message.chat) {
+              return {
+                ...chat,
+                lastMessage: {
+                  _id: message._id,
+                  text: message.text,
+                  sender: senderId,
+                  createdAt: message.createdAt,
+                },
+                lastMessageAt: message.createdAt,
+              };
+            }
+            return chat;
+          });
+        });
+      }
 
       // mark as unread if not currently viewing this chat and message is from other user
-      if (currentChatId !== message.chat) {
+      if (senderId && currentChatId !== message.chat) {
         const chats = queryClient.getQueryData<Chat[]>(["chats"]);
         const chat = chats?.find((c) => c._id === message.chat);
         if (chat?.participant && senderId === chat.participant._id) {
