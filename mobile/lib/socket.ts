@@ -107,6 +107,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
       } else {
         // Update chat's lastMessage directly for instant UI update
         queryClient.setQueryData<Chat[]>(["chats"], (oldChats) => {
+          if (!oldChats) return oldChats;
           return oldChats?.map((chat) => {
             if (chat._id === message.chat) {
               return {
@@ -124,7 +125,6 @@ export const useSocketStore = create<SocketState>((set, get) => ({
           });
         });
       }
-
       // mark as unread if not currently viewing this chat and message is from other user
       if (senderId && currentChatId !== message.chat) {
         const chats = queryClient.getQueryData<Chat[]>(["chats"]);
@@ -223,9 +223,21 @@ export const useSocketStore = create<SocketState>((set, get) => ({
       return [...old, optimisticMessage];
     });
 
-    socket.emit("send-message", { chatId, text });
+    socket
+      .timeout(5000)
+      .emit("send-message", { chatId, text }, (err: unknown) => {
+        if (err == null) return;
+        Sentry.logger.error("Failed to send message", {
+          chatId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        queryClient.setQueryData<Message[]>(["messages", chatId], (old) => {
+          if (!old) return [];
+          return old.filter((m) => m._id !== tempId);
+        });
+      });
 
-    Sentry.logger.info("Message sent successfully", {
+    Sentry.logger.info("Message emit initiated", {
       chatId,
       messageLength: text.length,
     });
